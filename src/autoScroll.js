@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.0.0
+ * AutoScroll.js v1.0.1
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -15,6 +15,10 @@
         this._init(dom, options)
     }
 
+    function getPrototype (a) {
+        return Object.prototype.toString.call(a).slice(8,-1)
+    }
+
     AutoScroll.prototype._init = function (dom, options) {
         // 默认参数
         this.config = {
@@ -23,7 +27,8 @@
             remote: false, // 若设为true，表明开始滚动后数据会发生变化，用户需手动停止改状态.用于数据量大循环请求的场景
             remoteMethod: null,
             remoteCondition: null,
-            hoverStop: false
+            hoverStop: false,
+            copyScrollContent: null
         }
 
         // 初始化参数
@@ -35,6 +40,9 @@
 
         // 容器
         this.container = typeof dom === 'string' ? document.querySelector(dom) : dom
+        if(!this.container){
+            return console.error('dom节点不存在');
+        }
         // 隐藏滚动轴
         this.container.style.overflow = 'hidden'
         // 滚动内容
@@ -72,6 +80,9 @@
     }
 
     AutoScroll.prototype._copyScrollContent = function () {
+        var result = this.config.copyScrollContent && this.config.copyScrollContent()
+        // return false表明不执行之后的复制动作
+        if(getPrototype(result) === 'Boolean' && !result) return
         this.scrollContent.innerHTML = this.scrollContent.innerHTML + this.scrollContent.innerHTML
     }
 
@@ -149,8 +160,10 @@
 
     AutoScroll.prototype.destroy = function () {
         // 销毁相应事件及raf
-        this.container.removeEventListener('mouseenter', this._stopScroll)
-        this.container.removeEventListener('mouseleave', this._resumeScroll)
+        if(this.container){
+            this.container.removeEventListener('mouseenter', this._stopScroll)
+            this.container.removeEventListener('mouseleave', this._resumeScroll)
+        }
         cancelAnimationFrame(this.raf)
     }
 
