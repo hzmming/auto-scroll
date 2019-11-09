@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        ul,li {
+            margin: 0;
+            padding: 0;
+        }
+        ul {
+            list-style: none;
+        }
+        .container {
+            width: 200px;
+            height: 300px;
+        }
+        .first {
+            background: pink;
+        }
+        .last {
+            background: greenyellow;
+        }
+    </style>
+    <script src="./src/autoScroll.js"></script>
+    <script src="./vendor/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="container" class="container">
+            <ul class="scroll-content">
+                <li v-for="(item,index) in list" :key="index" :class="{'first': index === 0, 'last': index === list.length-1}">{{item.name}}</li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        // 参考
+        // https://www.cnblogs.com/kenkofox/p/3849067.html
+        var tmp = 1
+        app = new Vue({
+            el: '#app',
+            data: {
+                list: [],
+            },
+            async created() {
+                const result = await this.getData()
+                this.list = result
+                this.$nextTick(()=>{
+                    bb = new AutoScroll('container', {
+                        hoverStop: true,
+                        remote: true,
+                        remoteMethod: (entity, finishRequest) => {
+                            if(!entity.getRemote()) return;
+                            console.log('scroll')
+                            setTimeout(async ()=>{
+                                const result = await this.getData()
+                                // 模拟结束条件
+                                if(tmp > 3)
+                                    return entity.toggleRemote()
+                                this.list.push(...result)
+                                // 一定要执行
+                                finishRequest()
+                            }, 300)
+                        }
+                    })
+                })
+            },
+            methods: {
+                getData() {
+                    tmp++
+                    return new Promise((resolve)=>{
+                        setTimeout(()=>{
+                            resolve([
+                                {name: (()=>('第一条' + Date.now()))()},
+                                {name: 'hello'},
+                                {name: 'hello'},
+                                {name: 'konnbannwa'},
+                                {name: 'dsfllo'},
+                                {name: 'hexxllo'},
+                                {name: '你好'},
+                                {name: '你好'},
+                                {name: 'hesdfllo'},
+                                {name: 'ohayo'},
+                                {name: 'hellocc'},
+                                {name: 'helldfso'},
+                                {name: 'hellocc'},
+                                {name: '你好'},
+                                {name: 'hesdfllo'},
+                                {name: 'ohayo'},
+                                {name: 'hello'},
+                                {name: 'konnbannwa'},
+                                {name: 'hello'},
+                                {name: 'hello'},
+                                {name: '你好'},
+                                {name: 'hesdfllo'},
+                                {name: 'ohayo'},
+                                {name: 'hello'},
+                                {name: 'hello'},
+                                {name: '最后一条'},
+                            ])
+                        })
+                    })
+                }
+            }
+        })
+
+    </script>
+</body>
+</html>
