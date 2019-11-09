@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.0.1
+ * AutoScroll.js v1.1.0
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -28,7 +28,8 @@
             remoteMethod: null,
             remoteCondition: null,
             hoverStop: false,
-            copyScrollContent: null
+            copyScrollContent: null,
+            wheel: false // 支持滚轮滚动
         }
 
         // 初始化参数
@@ -56,6 +57,7 @@
         this.isRequesting = false
         this._stopScroll = null     // mousenter事件用
         this._resumeScroll = null   // mousenter事件用
+        this._doWheel = null          // mousewheel事件用
 
         // 判断是否要滚动
         var needScroll = this.container.scrollHeight > this.container.clientHeight
@@ -67,6 +69,8 @@
             this._startScroll()
             // 悬浮停止
             this._initHoverEvent()
+            // 支持滚轮滚动
+            this._initWheelEvent()
         }
     }
 
@@ -76,6 +80,13 @@
             this._resumeScroll = this.resumeScroll.bind(this)
             this.container.addEventListener('mouseenter', this._stopScroll)
             this.container.addEventListener('mouseleave', this._resumeScroll)
+        }
+    }
+
+    AutoScroll.prototype._initWheelEvent = function () {
+        if(this.config.wheel){
+            this._doWheel = this.doWheel.bind(this)
+            this.container.addEventListener('mousewheel', this._doWheel)
         }
     }
 
@@ -105,9 +116,14 @@
             // this.last = this.now
             this.last = this.now - (this.delta % this.interval)
             this._scroll()
-            // 执行远程请求，isRequesting保证上一次请求结束才能再发
-            this.config.remote && !this.isRequesting && this._remoteMethod()
+            // remote相关操作
+            this._doRemote()
         }
+    }
+
+    AutoScroll.prototype._doRemote = function () {
+        // 执行远程请求，isRequesting保证上一次请求结束才能再发
+        this.config.remote && !this.isRequesting && this._remoteMethod()
     }
 
     AutoScroll.prototype._remoteMethod = function () {
@@ -149,6 +165,16 @@
         this.stop = false
     }
 
+    AutoScroll.prototype.doWheel = function (evt) {
+        // firefox 70.0.1，一次滚动的距离实际上是54，用的DOMMouseScroll测的
+        // chrome 78.0.3904.87，一次滚动的距离实际上是53，用的是mousewheel
+        // IE没测
+        // onwheel还没测
+        evt.currentTarget.scrollTop += evt.wheelDelta < 0 ? 53 : -53
+        // remote相关操作
+        this._doRemote()
+    }
+
     AutoScroll.prototype.getRemote = function () {
         return this.config.remote
     }
@@ -163,6 +189,7 @@
         if(this.container){
             this.container.removeEventListener('mouseenter', this._stopScroll)
             this.container.removeEventListener('mouseleave', this._resumeScroll)
+            this.container.removeEventListener('mousewheel', this._doWheel)
         }
         cancelAnimationFrame(this.raf)
     }

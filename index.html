@@ -24,6 +24,7 @@
         .container {
             width: 200px;
             height: 300px;
+            overflow: hidden;
         }
         .first {
             background: pink;
@@ -37,11 +38,9 @@
 </head>
 <body>
     <div id="app">
-        <div id="container" class="container">
-            <ul class="scroll-content">
-                <li v-for="(item,index) in list" :key="index" :class="{'first': index === 0, 'last': index === list.length-1}">{{item.name}}</li>
-            </ul>
-        </div>
+        <ul id="container" class="container">
+            <li v-for="(item,index) in list" :key="index" :class="{'first': index === 0, 'last': index === list.length-1}">{{item.name}}</li>
+        </ul>
     </div>
     <script>
         // 参考
@@ -56,9 +55,10 @@
                 const result = await this.getData()
                 this.list = result
                 this.$nextTick(()=>{
-                    bb = new AutoScroll('container', {
+                    bb = new AutoScroll('#container', {
                         hoverStop: true,
                         remote: true,
+                        wheel: true,
                         remoteMethod: (entity, finishRequest) => {
                             if(!entity.getRemote()) return;
                             console.log('scroll')
