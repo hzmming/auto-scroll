@@ -14,6 +14,9 @@
             justify-content: center;
             align-items: center;
         }
+        #app {
+            position: relative;
+        }
         ul,li {
             margin: 0;
             padding: 0;
@@ -32,6 +35,13 @@
         .last {
             background: greenyellow;
         }
+        .wrap {
+            height: 40px;
+            border: 1px solid mediumvioletred;
+            position: absolute;
+            width: 200px;
+            top: 0;
+        }
     </style>
     <script src="./src/autoScroll.js"></script>
     <script src="./vendor/vue.js"></script>
@@ -41,6 +51,7 @@
         <ul id="container" class="container">
             <li v-for="(item,index) in list" :key="index" :class="{'first': index === 0, 'last': index === list.length-1}">{{item.name}}</li>
         </ul>
+        <div class="wrap"></div>
     </div>
     <script>
         // 参考
@@ -58,7 +69,10 @@
                     bb = new AutoScroll('#container', {
                         hoverStop: true,
                         remote: true,
+                        suspend: true,
                         wheel: true,
+                        suspendTime: 200,
+                        suspendStep: 120,
                         remoteMethod: (entity, finishRequest) => {
                             if(!entity.getRemote()) return;
                             console.log('scroll')

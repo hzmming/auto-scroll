@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.1.0
+ * AutoScroll.js v1.2.0
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -29,7 +29,11 @@
             remoteCondition: null,
             hoverStop: false,
             copyScrollContent: null,
-            wheel: false // 支持滚轮滚动
+            wheel: false, // 支持滚轮滚动
+            suspend: false,
+            suspendItem: false, // 表示滚动一个儿子的高度暂停，默认为false，当儿子高度不等时开启，若相等不开启性能更好
+            suspendTime: 2000, // 单位（ms）
+            suspendStep: 40, // 表示滚动多少距离后暂停（suspendItem为true失效）
         }
 
         // 初始化参数
@@ -49,12 +53,14 @@
         // 滚动内容
         this.scrollContent = this.container.firstElementChild
         this.now = null;
-        this.last = Date.now()
+        this.lastSuspendTime = this.last = Date.now()
         this.interval = 1000/this.config.fps
         this.delta = null;
         this.raf = null;
-        this.stop = false
-        this.isRequesting = false
+        this.stop = false;
+        this.isRequesting = false;
+        this._isSuspend = false;
+        this.suspendScrollTop = 0;
         this._stopScroll = null     // mousenter事件用
         this._resumeScroll = null   // mousenter事件用
         this._doWheel = null          // mousewheel事件用
@@ -103,15 +109,41 @@
         if(this.stop){
             return;
         }
+
+        // 更新时间
+        this.now = Date.now()
+        this.delta = this.now - this.last
+
+        // 场景：暂停
+        if(this._isSuspend){
+            // 判断暂停时间是否结束
+            if(this.now - this.lastSuspendTime < this.config.suspendTime){
+                return;
+            }
+        }
+
+        var scrollHeight = this.container.scrollHeight,
+            scrollTop = this.container.scrollTop,
+            clientHeight = this.container.clientHeight;
+
+        // 判断是否到暂停距离
+        if(scrollTop - this.suspendScrollTop >= this.config.suspendStep){
+            // 输出的距离永远等于suspendStep
+            // console.log('距离',scrollTop - this.suspendScrollTop)
+            this.suspendScrollTop = scrollTop
+            this._isSuspend = true
+            this.lastSuspendTime = this.now;
+            return;
+        }
+
         // 判断是否滚动到底
-        var isEnd = this.container.scrollHeight - this.container.scrollTop === this.container.clientHeight
+        var isEnd = scrollHeight - scrollTop === clientHeight
         if(isEnd){
             // 到底重置.注意，不是重置为0哦
             this._reset()
             // return cancelAnimationFrame(raf)
         }
-        this.now = Date.now()
-        this.delta = this.now - this.last
+
         if(this.delta >= this.interval){
             // this.last = this.now
             this.last = this.now - (this.delta % this.interval)
@@ -142,11 +174,15 @@
     }
 
     AutoScroll.prototype._reset = function () {
+        // 自从上次暂停结束后滚动的距离
+        var walkDistance = this.container.scrollTop - this.suspendScrollTop
         if(this.config.remote){
             this.container.scrollTop = this.container.scrollHeight - this.container.clientHeight
         }else{
             this.container.scrollTop = this.container.scrollHeight/2 - this.container.clientHeight
         }
+        // 因为无缝滚动，所以scrollTop变完后的距离减掉walkDistance就可以推出现在的suspendScrollTop
+        this.suspendScrollTop = this.container.scrollTop - walkDistance
     }
 
     AutoScroll.prototype._scroll = function () {
