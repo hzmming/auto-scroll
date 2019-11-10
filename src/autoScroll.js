@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.4.0
+ * AutoScroll.js v1.4.1
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -132,25 +132,27 @@
             scrollTop = this.container.scrollTop,
             clientHeight = this.container.clientHeight;
 
-        var whetherToSuspend = false;
-        // 判断是否到暂停距离
-        if(this.config.suspendItem){
-            whetherToSuspend = scrollTop - this.suspendScrollTop >= this.suspendItemHeight
-        }else{
-            whetherToSuspend = scrollTop - this.suspendScrollTop >= this.config.suspendStep
-        }
-        if(whetherToSuspend){
-            if(this.config.debug){
-                // 输出的距离永远等于suspendStep
-                console.log('距离',scrollTop - this.suspendScrollTop)
-                //
-                console.log(this.suspendItemIndex, this.suspendItemHeight, this.children.item(this.suspendItemIndex).innerHTML)
+        if(this.config.suspend){
+            var whetherToSuspend = false;
+            // 判断是否到暂停距离
+            if(this.config.suspendItem){
+                whetherToSuspend = scrollTop - this.suspendScrollTop >= this.suspendItemHeight
+            }else{
+                whetherToSuspend = scrollTop - this.suspendScrollTop >= this.config.suspendStep
             }
-            this.suspendScrollTop = scrollTop
-            this.isSuspend = true
-            this.lastSuspendTime = this.now;
-            this._updateSuspendItemInfo()
-            return;
+            if(whetherToSuspend){
+                if(this.config.debug){
+                    // 输出的距离永远等于suspendStep
+                    console.log('距离',scrollTop - this.suspendScrollTop)
+                    //
+                    console.log(this.suspendItemIndex, this.suspendItemHeight, this.children.item(this.suspendItemIndex).innerHTML)
+                }
+                this.suspendScrollTop = scrollTop
+                this.isSuspend = true
+                this.lastSuspendTime = this.now;
+                this._updateSuspendItemInfo()
+                return;
+            }
         }
 
         // 判断是否滚动到底
