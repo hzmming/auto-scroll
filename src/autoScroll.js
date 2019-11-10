@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.3.0
+ * AutoScroll.js v1.4.0
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -35,6 +35,7 @@
             suspendItemEqual: false, // 若儿子高度均相等，可开启该属性减少查询dom（应该能提高性能吧，俺也不知道诶）
             suspendTime: 2000, // 单位（ms）
             suspendStep: 40, // 表示滚动多少距离后暂停（仅当suspendItem为false有效）
+            debug: false
         }
 
         // 初始化参数
@@ -139,10 +140,12 @@
             whetherToSuspend = scrollTop - this.suspendScrollTop >= this.config.suspendStep
         }
         if(whetherToSuspend){
-            // 输出的距离永远等于suspendStep
-            // console.log('距离',scrollTop - this.suspendScrollTop)
-            //
-            // console.log(this.suspendItemIndex, this.suspendItemHeight, this.children.item(this.suspendItemIndex).innerHTML)
+            if(this.config.debug){
+                // 输出的距离永远等于suspendStep
+                console.log('距离',scrollTop - this.suspendScrollTop)
+                //
+                console.log(this.suspendItemIndex, this.suspendItemHeight, this.children.item(this.suspendItemIndex).innerHTML)
+            }
             this.suspendScrollTop = scrollTop
             this.isSuspend = true
             this.lastSuspendTime = this.now;
@@ -202,7 +205,9 @@
     }
 
     AutoScroll.prototype._reset = function () {
-        // console.log('reset')
+        if(this.config.debug){
+            console.log('reset')
+        }
         // 自从上次暂停结束后滚动的距离
         var walkDistance = this.container.scrollTop - this.suspendScrollTop
         if(this.config.remote){
