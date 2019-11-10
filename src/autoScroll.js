@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.2.0
+ * AutoScroll.js v1.3.0
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -31,9 +31,10 @@
             copyScrollContent: null,
             wheel: false, // 支持滚轮滚动
             suspend: false,
-            suspendItem: false, // 表示滚动一个儿子的高度暂停，默认为false，当儿子高度不等时开启，若相等不开启性能更好
+            suspendItem: true, // 表示滚动一个儿子的高度暂停，默认为true
+            suspendItemEqual: false, // 若儿子高度均相等，可开启该属性减少查询dom（应该能提高性能吧，俺也不知道诶）
             suspendTime: 2000, // 单位（ms）
-            suspendStep: 40, // 表示滚动多少距离后暂停（suspendItem为true失效）
+            suspendStep: 40, // 表示滚动多少距离后暂停（仅当suspendItem为false有效）
         }
 
         // 初始化参数
@@ -48,10 +49,12 @@
         if(!this.container){
             return console.error('dom节点不存在');
         }
+
+        // 子元素列表（是元素element，不包括非element的text、comment节点[node]）
+        this.children = this.container.children;
+
         // 隐藏滚动轴
         this.container.style.overflow = 'hidden'
-        // 滚动内容
-        this.scrollContent = this.container.firstElementChild
         this.now = null;
         this.lastSuspendTime = this.last = Date.now()
         this.interval = 1000/this.config.fps
@@ -59,8 +62,10 @@
         this.raf = null;
         this.stop = false;
         this.isRequesting = false;
-        this._isSuspend = false;
+        this.isSuspend = false;
         this.suspendScrollTop = 0;
+        this.suspendItemIndex = 0;
+        this.suspendItemHeight = this.children.item(0).offsetHeight;
         this._stopScroll = null     // mousenter事件用
         this._resumeScroll = null   // mousenter事件用
         this._doWheel = null          // mousewheel事件用
@@ -100,7 +105,7 @@
         var result = this.config.copyScrollContent && this.config.copyScrollContent()
         // return false表明不执行之后的复制动作
         if(getPrototype(result) === 'Boolean' && !result) return
-        this.scrollContent.innerHTML = this.scrollContent.innerHTML + this.scrollContent.innerHTML
+        this.container.innerHTML = this.container.innerHTML + this.container.innerHTML
     }
 
     AutoScroll.prototype._startScroll = function () {
@@ -115,7 +120,7 @@
         this.delta = this.now - this.last
 
         // 场景：暂停
-        if(this._isSuspend){
+        if(this.isSuspend){
             // 判断暂停时间是否结束
             if(this.now - this.lastSuspendTime < this.config.suspendTime){
                 return;
@@ -126,13 +131,22 @@
             scrollTop = this.container.scrollTop,
             clientHeight = this.container.clientHeight;
 
+        var whetherToSuspend = false;
         // 判断是否到暂停距离
-        if(scrollTop - this.suspendScrollTop >= this.config.suspendStep){
+        if(this.config.suspendItem){
+            whetherToSuspend = scrollTop - this.suspendScrollTop >= this.suspendItemHeight
+        }else{
+            whetherToSuspend = scrollTop - this.suspendScrollTop >= this.config.suspendStep
+        }
+        if(whetherToSuspend){
             // 输出的距离永远等于suspendStep
             // console.log('距离',scrollTop - this.suspendScrollTop)
+            //
+            // console.log(this.suspendItemIndex, this.suspendItemHeight, this.children.item(this.suspendItemIndex).innerHTML)
             this.suspendScrollTop = scrollTop
-            this._isSuspend = true
+            this.isSuspend = true
             this.lastSuspendTime = this.now;
+            this._updateSuspendItemInfo()
             return;
         }
 
@@ -150,6 +164,20 @@
             this._scroll()
             // remote相关操作
             this._doRemote()
+        }
+    }
+
+    AutoScroll.prototype._updateSuspendItemInfo = function () {
+        if(this.config.suspendItem){
+            this.suspendItemIndex++;
+            // 循环重置
+            /**
+             * 执行_copyScrollContent方法后，suspendItemIndex会大于实际儿子长度，但因为指向的元素是实际元素拷贝出来的，所以也无所谓
+             * 如果想重置到真实的下标，也可以在执行_copyScrollContent方法后，suspendItemIndex -= this.children.length/2[真实儿子长度]
+             */
+            this.suspendItemIndex >= this.children.length && (this.suspendItemIndex = 0)
+            // 开启suspendItemEqual表示儿子高度均等，只需以第一个儿子高度为准，无需重新获取
+            this.config.suspendItemEqual || (this.suspendItemHeight = this.children.item(this.suspendItemIndex).offsetHeight)
         }
     }
 
@@ -174,6 +202,7 @@
     }
 
     AutoScroll.prototype._reset = function () {
+        // console.log('reset')
         // 自从上次暂停结束后滚动的距离
         var walkDistance = this.container.scrollTop - this.suspendScrollTop
         if(this.config.remote){

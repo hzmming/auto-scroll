@@ -73,9 +73,11 @@
                         wheel: true,
                         suspendTime: 200,
                         suspendStep: 120,
+                        suspendItem: true,
+                        suspendItemEqual: true,
                         remoteMethod: (entity, finishRequest) => {
                             if(!entity.getRemote()) return;
-                            console.log('scroll')
+                            console.log('remote')
                             setTimeout(async ()=>{
                                 const result = await this.getData()
                                 // 模拟结束条件
@@ -93,35 +95,14 @@
                 getData() {
                     tmp++
                     return new Promise((resolve)=>{
+                        const result = [];
+                        for(let i=(tmp-2)*25; i<(tmp-1)*25; i++){
+                            result.push({
+                                name: `第${i}条`
+                            })
+                        }
                         setTimeout(()=>{
-                            resolve([
-                                {name: (()=>('第一条' + Date.now()))()},
-                                {name: 'hello'},
-                                {name: 'hello'},
-                                {name: 'konnbannwa'},
-                                {name: 'dsfllo'},
-                                {name: 'hexxllo'},
-                                {name: '你好'},
-                                {name: '你好'},
-                                {name: 'hesdfllo'},
-                                {name: 'ohayo'},
-                                {name: 'hellocc'},
-                                {name: 'helldfso'},
-                                {name: 'hellocc'},
-                                {name: '你好'},
-                                {name: 'hesdfllo'},
-                                {name: 'ohayo'},
-                                {name: 'hello'},
-                                {name: 'konnbannwa'},
-                                {name: 'hello'},
-                                {name: 'hello'},
-                                {name: '你好'},
-                                {name: 'hesdfllo'},
-                                {name: 'ohayo'},
-                                {name: 'hello'},
-                                {name: 'hello'},
-                                {name: '最后一条'},
-                            ])
+                            resolve(result)
                         })
                     })
                 }
