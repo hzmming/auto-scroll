@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.4.2
+ * AutoScroll.js v1.4.3
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -67,7 +67,8 @@
         this.isSuspend = false;
         this.suspendScrollTop = 0;
         this.suspendItemIndex = 0;
-        this.suspendItemHeight = this.children.item(0).offsetHeight;
+        var firstChild = this.children.item(0)
+        this.suspendItemHeight = firstChild ? firstChild.offsetHeight : 0;
         this._stopScroll = null     // mousenter事件用
         this._resumeScroll = null   // mousenter事件用
         this._doWheel = null          // mousewheel事件用
