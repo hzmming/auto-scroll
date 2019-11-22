@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.4.1
+ * AutoScroll.js v1.4.2
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -63,6 +63,7 @@
         this.raf = null;
         this.stop = false;
         this.isRequesting = false;
+        this.isCopied = false; // 表示是否复制
         this.isSuspend = false;
         this.suspendScrollTop = 0;
         this.suspendItemIndex = 0;
@@ -103,6 +104,8 @@
     }
 
     AutoScroll.prototype._copyScrollContent = function () {
+        // 表示是否复制过
+        this.isCopied = true;
         var result = this.config.copyScrollContent && this.config.copyScrollContent()
         // return false表明不执行之后的复制动作
         if(getPrototype(result) === 'Boolean' && !result) return
@@ -238,11 +241,36 @@
     }
 
     AutoScroll.prototype.doWheel = function (evt) {
+        // 当前滚动距离
+        var scrollTop = evt.currentTarget.scrollTop;
+
         // firefox 70.0.1，一次滚动的距离实际上是54，用的DOMMouseScroll测的
         // chrome 78.0.3904.87，一次滚动的距离实际上是53，用的是mousewheel
         // IE没测
         // onwheel还没测
-        evt.currentTarget.scrollTop += evt.wheelDelta < 0 ? 53 : -53
+        var wheelDistance = evt.wheelDelta < 0 ? 53 : -53;
+        // 判断是否到真实的底
+        var height = this.container.scrollHeight; // 容器展开高度
+        var realHeight = this.isCopied ? height/2 : height; // 容器展开实际高度
+        var viewHeight = this.container.offsetHeight; // 可视窗口高度
+        var isEnd = false;
+        var walkOnCopy = false; // 是否滚动至复制部分了
+        // 若未复制，说明还在无限滚动，将继续发请求
+        if(this.isCopied){
+            // 滚动至复制部分
+            if(scrollTop + viewHeight > realHeight){
+                // 其实滚动至复制部分就没有判断到底的必要了，因为scrollTop超出实际部分没有意义，而且也无法赋值，写完才发现，写了就写了吧
+                isEnd = scrollTop + wheelDistance + viewHeight > height;
+                walkOnCopy = true;
+            }else{
+                // 尚未滚动至复制部分
+                isEnd = scrollTop + wheelDistance + viewHeight > realHeight;
+            }
+        }
+        if(isEnd){
+            return evt.currentTarget.scrollTop = walkOnCopy ? height - viewHeight : realHeight - viewHeight;
+        }
+        evt.currentTarget.scrollTop += wheelDistance;
         // remote相关操作
         this._doRemote()
     }
