@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.4.3
+ * AutoScroll.js v1.4.4
  * (c) 2019 LoryHuang
  */
 (function (global, factory) {
@@ -249,27 +249,43 @@
         // chrome 78.0.3904.87，一次滚动的距离实际上是53，用的是mousewheel
         // IE没测
         // onwheel还没测
-        var wheelDistance = evt.wheelDelta < 0 ? 53 : -53;
+        // 不同浏览器判断条件不一样，以后要优化hzm_to_do
+        var isScrollDown = evt.wheelDelta < 0
+        var wheelDistance = isScrollDown ? 53 : -53;
         // 判断是否到真实的底
         var height = this.container.scrollHeight; // 容器展开高度
         var realHeight = this.isCopied ? height/2 : height; // 容器展开实际高度
         var viewHeight = this.container.offsetHeight; // 可视窗口高度
+        var isBegin = false;
         var isEnd = false;
         var walkOnCopy = false; // 是否滚动至复制部分了
         // 若未复制，说明还在无限滚动，将继续发请求
         if(this.isCopied){
-            // 滚动至复制部分
-            if(scrollTop + viewHeight > realHeight){
-                // 其实滚动至复制部分就没有判断到底的必要了，因为scrollTop超出实际部分没有意义，而且也无法赋值，写完才发现，写了就写了吧
-                isEnd = scrollTop + wheelDistance + viewHeight > height;
-                walkOnCopy = true;
+            // 向下滚动
+            if(isScrollDown){
+                // 滚动至复制部分
+                if(scrollTop + viewHeight > realHeight){
+                    // 其实滚动至复制部分就没有判断到底的必要了，因为scrollTop超出实际部分没有意义，而且也无法赋值，写完才发现，写了就写了吧
+                    isEnd = scrollTop + wheelDistance + viewHeight > height;
+                    walkOnCopy = true;
+                }else{
+                    // 尚未滚动至复制部分
+                    isEnd = scrollTop + wheelDistance + viewHeight > realHeight;
+                }
+                if(isEnd){
+                    return evt.currentTarget.scrollTop = walkOnCopy ? height - viewHeight : realHeight - viewHeight;
+                }
             }else{
-                // 尚未滚动至复制部分
-                isEnd = scrollTop + wheelDistance + viewHeight > realHeight;
+                // 向上滚动
+                // 判断当前是否完全看不到原始部分
+                if(scrollTop >= realHeight){
+                    // 表示到顶了
+                    scrollTop + wheelDistance < realHeight && (isBegin = true)
+                    if(isBegin){
+                        return evt.currentTarget.scrollTop = realHeight;
+                    }
+                }
             }
-        }
-        if(isEnd){
-            return evt.currentTarget.scrollTop = walkOnCopy ? height - viewHeight : realHeight - viewHeight;
         }
         evt.currentTarget.scrollTop += wheelDistance;
         // remote相关操作
