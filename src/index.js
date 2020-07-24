@@ -304,9 +304,9 @@ class AutoScroll {
     return this.config.remote;
   }
 
-  toggleRemote() {
-    this.config.remote = !this.config.remote;
-    this.config.remote || this._copyScrollContent();
+  stopRemote() {
+    this.config.remote = false;
+    this._copyScrollContent();
   }
 
   destroy() {
