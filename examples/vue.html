@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #app {
+        position: relative;
+      }
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      .container {
+        width: 200px;
+        height: 300px;
+      }
+    </style>
+    <script src="../dist/auto-scroll.js"></script>
+    <script src="./vendor/vue.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <ul id="container" class="container">
+        <li v-for="(item,index) in list" :key="index">{{item.name}}</li>
+      </ul>
+    </div>
+    <script>
+      function getData() {
+        return new Promise((resolve) => {
+          let result = [];
+          for (let i = 0; i < 25; i++) {
+            result.push({
+              name: `第${i}条`,
+            });
+          }
+          setTimeout(() => {
+            resolve(result);
+          });
+        });
+      }
+      new Vue({
+        el: "#app",
+        data: {
+          list: [],
+        },
+        async created() {
+          this.list = await getData();
+          await this.$nextTick();
+          new AutoScroll("#container");
+        },
+      });
+    </script>
+  </body>
+</html>

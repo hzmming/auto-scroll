@@ -1,115 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Examples</title>
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #app {
-            position: relative;
-        }
-        ul,li {
-            margin: 0;
-            padding: 0;
-        }
-        ul {
-            list-style: none;
-        }
-        .container {
-            width: 200px;
-            height: 300px;
-            overflow: hidden;
-        }
-        .first {
-            background: pink;
-        }
-        .last {
-            background: greenyellow;
-        }
-        .wrap {
-            height: 40px;
-            border: 1px solid mediumvioletred;
-            position: absolute;
-            width: 200px;
-            top: 0;
-        }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #app {
+        position: relative;
+      }
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
     </style>
-    <script src="../dist/auto-scroll.js"></script>
-    <script src="./vendor/vue.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="app">
-        <ul id="container" class="container">
-            <li v-for="(item,index) in list" :key="index" :class="{'first': index === 0, 'last': index === list.length-1}">{{item.name}}</li>
-        </ul>
-        <div class="wrap"></div>
+      <ul id="container" class="container">
+        <li><a href="./simple.html">Simple example</a></li>
+        <li><a href="./full.html">Full example</a></li>
+        <li><a href="./remote.html">Remote example</a></li>
+        <li><a href="./vue.html">Vue example</a></li>
+      </ul>
     </div>
-    <script>
-        // 参考
-        // https://www.cnblogs.com/kenkofox/p/3849067.html
-        var tmp = 1
-        app = new Vue({
-            el: '#app',
-            data: {
-                list: [],
-            },
-            async created() {
-                const result = await this.getData()
-                this.list = result
-                this.$nextTick(()=>{
-                    bb = new AutoScroll('#container', {
-                        hoverStop: true,
-                        remote: false,
-                        suspend: false,
-                        wheel: true,
-                        suspendTime: 200,
-                        suspendStep: 120,
-                        suspendItem: true,
-                        suspendItemEqual: true,
-                        debug: false,
-                        remoteMethod: (entity, finishRequest) => {
-                            if(!entity.getRemote()) return;
-                            console.log('remote')
-                            setTimeout(async ()=>{
-                                const result = await this.getData()
-                                // 模拟结束条件
-                                if(tmp > 3)
-                                    return entity.toggleRemote()
-                                this.list.push(...result)
-                                // 一定要执行
-                                finishRequest()
-                            }, 300)
-                        }
-                    })
-                })
-            },
-            methods: {
-                getData() {
-                    tmp++
-                    return new Promise((resolve)=>{
-                        const result = [];
-                        for(let i=(tmp-2)*25; i<(tmp-1)*25; i++){
-                            result.push({
-                                name: `第${i}条`
-                            })
-                        }
-                        setTimeout(()=>{
-                            resolve(result)
-                        })
-                    })
-                }
-            }
-        })
-
-    </script>
-</body>
+  </body>
 </html>

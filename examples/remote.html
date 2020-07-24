@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #app {
+        position: relative;
+      }
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      .container {
+        width: 200px;
+        height: 300px;
+      }
+    </style>
+    <script src="../dist/auto-scroll.js"></script>
+  </head>
+  <body onload="init()">
+    <div id="app">
+      <ul id="container" class="container"></ul>
+    </div>
+    <script>
+      let count = 0;
+      function getData() {
+        count++;
+        return new Promise((resolve) => {
+          const start = (count - 1) * 25;
+          let result = [];
+          for (let i = start; i < start + 25; i++) {
+            result.push({
+              name: `第${i}条`,
+            });
+          }
+          // 假设数据只够请求3次
+          if (count > 3) {
+            result = [];
+          }
+          setTimeout(() => {
+            resolve(result);
+          });
+        });
+      }
+      function generateContent(data) {
+        let htmlStr = "";
+        data.forEach((i) => {
+          htmlStr += `<li>${i.name}</li>`;
+        });
+        return htmlStr;
+      }
+      function appendContent(data) {
+        let content = generateContent(data);
+        const container = document.querySelector("#container");
+        container.innerHTML += content;
+      }
+      async function init() {
+        const data = await getData();
+        appendContent(data);
+        new AutoScroll(container, {
+          remote: true,
+          remoteMethod: async (instance, finishRequest) => {
+            console.log("remote");
+            const result = await this.getData();
+            // 手动结束
+            if (!result.length) return instance.stopRemote();
+            appendContent(result);
+            // 一定要执行
+            finishRequest();
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

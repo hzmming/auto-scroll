@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #app {
+        position: relative;
+      }
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      .container {
+        width: 200px;
+        height: 300px;
+      }
+    </style>
+    <script src="../dist/auto-scroll.js"></script>
+  </head>
+  <body onload="init()">
+    <div id="app">
+      <ul id="container" class="container"></ul>
+    </div>
+    <script>
+      function getData() {
+        return new Promise((resolve) => {
+          let result = [];
+          for (let i = 0; i < 25; i++) {
+            result.push({
+              name: `第${i}条`,
+            });
+          }
+          setTimeout(() => {
+            resolve(result);
+          });
+        });
+      }
+      function generateContent(data) {
+        let htmlStr = "";
+        data.forEach((i) => {
+          htmlStr += `<li>${i.name}</li>`;
+        });
+        return htmlStr;
+      }
+      function appendContent(data) {
+        let content = generateContent(data);
+        const container = document.querySelector("#container");
+        container.innerHTML += content;
+      }
+      async function init() {
+        const data = await getData();
+        appendContent(data);
+        new AutoScroll(container, {
+          // 鼠标悬浮停止滚动
+          // hoverStop: true,
+          // 支持短暂停止滚动
+          suspend: true,
+          // 支持滚轮滚动（开启滚轮滚动的话，悬浮停止滚动）
+          wheel: true,
+          // 暂停时间
+          suspendTime: 200,
+          // 子项等高情况下，开启优化性能
+          suspendItemEqual: true,
+        });
+      }
+    </script>
+  </body>
+</html>
