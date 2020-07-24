@@ -5,6 +5,7 @@ import {
   addEventListener,
   removeEventListener,
 } from "./util";
+import { log } from "./logger";
 
 class AutoScroll {
   constructor(dom, options) {
@@ -27,7 +28,6 @@ class AutoScroll {
       suspendItemEqual: false, // 若儿子高度均相等，可开启该属性减少查询dom（应该能提高性能吧，俺也不知道诶）
       suspendTime: 2000, // 单位（ms）
       suspendStep: 40, // 表示滚动多少距离后暂停（仅当suspendItem为false有效）
-      debug: false,
     };
 
     // 初始化参数
@@ -62,8 +62,8 @@ class AutoScroll {
     this.suspendItemIndex = 0;
     const firstChild = this.children.item(0);
     this.suspendItemHeight = firstChild ? firstChild.offsetHeight : 0;
-    this._stopScroll = null; // mousenter事件用
-    this._resumeScroll = null; // mousenter事件用
+    this._stopScroll = null; // mouseenter事件用
+    this._resumeScroll = null; // mouseenter事件用
     this._doWheel = null; // mousewheel事件用
 
     // 判断是否要滚动
@@ -83,7 +83,8 @@ class AutoScroll {
   }
 
   _initHoverEvent() {
-    if (this.config.hoverStop) {
+    // 开启滚轮滚动的话，悬浮停止滚动
+    if (this.config.hoverStop || this.config.wheel) {
       this._stopScroll = this.stopScroll.bind(this);
       this._resumeScroll = this.resumeScroll.bind(this);
       addEventListener(this.container, "mouseenter", this._stopScroll);
@@ -143,16 +144,13 @@ class AutoScroll {
           scrollTop - this.suspendScrollTop >= this.config.suspendStep;
       }
       if (whetherToSuspend) {
-        if (this.config.debug) {
-          // 输出的距离永远等于suspendStep
-          console.log("距离", scrollTop - this.suspendScrollTop);
-          //
-          console.log(
-            this.suspendItemIndex,
-            this.suspendItemHeight,
-            this.children.item(this.suspendItemIndex).innerHTML
-          );
-        }
+        // 输出的距离永远等于suspendStep
+        log("距离", scrollTop - this.suspendScrollTop);
+        log(
+          this.suspendItemIndex,
+          this.suspendItemHeight,
+          this.children.item(this.suspendItemIndex).innerHTML
+        );
         this.suspendScrollTop = scrollTop;
         this.isSuspend = true;
         this.lastSuspendTime = this.now;
@@ -219,9 +217,7 @@ class AutoScroll {
   }
 
   _reset() {
-    if (this.config.debug) {
-      console.log("reset");
-    }
+    log("reset");
     // 自从上次暂停结束后滚动的距离
     let walkDistance = this.container.scrollTop - this.suspendScrollTop;
     if (this.config.remote) {
