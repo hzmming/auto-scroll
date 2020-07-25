@@ -20,7 +20,7 @@ class AutoScroll {
       remote: false, // 若设为true，表明开始滚动后数据会发生变化，用户需手动停止改状态.用于数据量大循环请求的场景
       remoteMethod: null,
       remoteCondition: null,
-      hoverStop: false,
+      hoverStop: false, // 鼠标悬浮停止滚动
       copyScrollContent: null,
       wheel: false, // 支持滚轮滚动
       suspend: false,
@@ -300,7 +300,7 @@ class AutoScroll {
     this._doRemote();
   }
 
-  getRemote() {
+  isRemote() {
     return this.config.remote;
   }
 
