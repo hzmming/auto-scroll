@@ -1,16 +1,27 @@
 {
   "name": "auto-scroll",
   "version": "1.5.0",
-  "description": "一款自动滚动插件，支持设置滚动fps、一次滚动距离及是否鼠标悬停，并支持滚动的过程发请求再次获取数据，可以设置触发请求的条件，默认为滚动1/4即发请求.同时支持滚轮滚动 支持指定滚动距离后暂停指定时间 支持按照儿子高度自动滚动暂停 支持debug查看调试信息",
+  "description": "一款简单地自动滚动JavaScript插件",
   "main": "dist/auto-scroll.js",
   "module": "src/index.js",
   "scripts": {
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "auto",
+    "scroll"
+  ],
   "author": "LoryHuang",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/hzmming/auto-scroll.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hzmming/auto-scroll/issues"
+  },
+  "homepage": "https://github.com/hzmming/auto-scroll#readme",
   "devDependencies": {
     "@babel/core": "^7.10.5",
     "@babel/plugin-transform-runtime": "^7.10.5",
