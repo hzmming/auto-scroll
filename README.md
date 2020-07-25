@@ -30,7 +30,7 @@
 **Webpack**
 
 ```shell
-npm i auto-scroll -S
+npm i simple-auto-scroll -S
 ```
 
 ```javascript
