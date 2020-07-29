@@ -1,16 +1,18 @@
 {
   "name": "simple-auto-scroll",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "一款简单地自动滚动JavaScript插件",
   "main": "dist/auto-scroll.js",
   "module": "src/index.js",
   "scripts": {
     "build": "webpack",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "auto",
-    "scroll"
+    "scroll",
+    "auto scroll"
   ],
   "author": "LoryHuang",
   "license": "MIT",

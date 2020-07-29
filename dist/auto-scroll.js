@@ -1,5 +1,5 @@
 /*!
- * AutoScroll.js v1.5.0
+ * AutoScroll.js v1.5.1
  * (c) 2019-2020 LoryHuang
  * Released under the MIT License.
  */
